@@ -86,18 +86,6 @@ canvas {
 	display: block;
 }
 
-.snake {
-	border: solid 10px #CCC;
-	position: relative;
-	background-color: white;
-	transition: all .2s;
-	pointer-events: none;
-
-	&[data-preview="true"] {
-		border-color: var(--poison);
-	}
-}
-
 .game-over {
 	position: absolute;
 	inset: 0;
@@ -174,11 +162,9 @@ input[type="number"] {
 }
 
 .inputs {
-  padding-top: 10px;
+  padding-top: 5px;
   position: absolute;
-  background-color: white;
   display: flex;
-  gap: 10px;
   flex-direction: column;
 }
 
@@ -187,6 +173,8 @@ input[type="number"] {
   display: flex;
   align-items: center;
   gap: 5px;
+  background-color: white;
+  padding: 10px 0;
 
   select {
     padding: 0 10px;
