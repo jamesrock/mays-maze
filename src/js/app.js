@@ -1,7 +1,5 @@
 import '/css/app.css';
-import {
-	setDocumentHeight,
-} from '@jamesrock/rockjs';
+import { setDocumentHeight } from '@jamesrock/rockjs';
 import { Make } from './Make';
 import { Play } from './Play';
 

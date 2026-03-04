@@ -1,6 +1,5 @@
 import {
 	Rounder,
-	DisplayObject,
 	isValidKey,
 	getLast
 } from '@jamesrock/rockjs';
@@ -9,10 +8,8 @@ import { mazes } from './mazes';
 
 const body = document.body;
 
-export class Play extends DisplayObject {
+export class Play {
 	constructor() {
-
-		super();
 
 	  const mode = this.mode = 'hard';
     this.maze = new Maze(getLast(mazes[mode]), mode);

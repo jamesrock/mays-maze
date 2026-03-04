@@ -1,18 +1,12 @@
 import {
-	Rounder,
 	Scaler,
 	GameBase,
 	setDocumentHeight,
-	isValidKey,
 	makeArray,
 	makeNode,
-	getLast,
 	floorTo
 } from '@jamesrock/rockjs';
-import { mazes } from './mazes';
 import { mapToGrid } from './utils';
-
-// console.log(mazes);
 
 setDocumentHeight();
 

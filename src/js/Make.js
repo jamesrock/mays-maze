@@ -1,14 +1,9 @@
-import {
-	DisplayObject,
-} from '@jamesrock/rockjs';
 import { Maker } from './Maker';
 
 const body = document.body;
 
-export class Make extends DisplayObject {
+export class Make {
 	constructor() {
-
-		super();
 
     this.maker = new Maker();
 
