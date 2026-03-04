@@ -6,8 +6,6 @@ import {
 	setDocumentHeight,
 	isValidKey,
 	makeArray,
-	random,
-	getRandom,
 	makeNode,
 	getLast,
 	floorTo
