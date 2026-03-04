@@ -360,7 +360,7 @@ directionsKeyMap = {
 directionsArray = Object.keys(directionsKeyMap),
 rounder = new Rounder(30),
 mode = '300',
-// maker = window.maker = new Maker(),
+maker = window.maker = new Maker(),
 snake = window.snake = new Maze(getLast(mazes[`d${mode}`]), mode);
 
 let touch = null;
@@ -441,5 +441,5 @@ document.addEventListener('drag-left', () => {
 
 });
 
-snake.appendTo(body);
-// maker.appendTo(body);
+// snake.appendTo(body);
+maker.appendTo(body);
