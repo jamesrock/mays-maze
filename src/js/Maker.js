@@ -11,6 +11,41 @@ import {
 import { mapToGrid } from './utils';
 import { mazes } from './mazes';
 
+export const settings = {
+  'easy': {
+    xPos: 3,
+    yPos: 38,
+    size: 1476,
+    pixelSize: 20,
+    width: 37,
+    height: 49
+  },
+  'medium': {
+    xPos: 3,
+    yPos: 37,
+    size: 1406,
+    pixelSize: 15,
+    width: 46,
+    height: 61
+  },
+  'hard': {
+    xPos: 4,
+    yPos: 36,
+    size: 1370,
+    pixelSize: 12,
+    width: 55,
+    height: 73
+  },
+  'extrahard': {
+    xPos: 4,
+    yPos: 37,
+    size: 1398,
+    pixelSize: 10,
+    width: 67,
+    height: 88
+  },
+};
+
 const body = document.body;
 
 const makeOpacitySlider = () => {
@@ -36,8 +71,37 @@ const makeSweeper = (size) => {
 
 };
 
+const getGuides = (w, h) => {
+
+  let x = 0;
+  let y = 0;
+
+  const guides = makeArray(55).map((value) => value * 3);
+  const xPixels = (w-1)/3;
+  const yPixels = (h-1)/3;
+  const combined = ((xPixels*yPixels)*4);
+
+  return makeArray((w*h) - combined).map(() => {
+
+    const isYGuide = guides.includes(y);
+    const guide = [x, y];
+
+    if(x > 0 && x%(w-1)===0) {
+      x = 0;
+      y ++;
+    }
+    else {
+      x += isYGuide ? 1 : 3;
+    };
+
+    return guide;
+
+  });
+
+};
+
 class Grid extends DisplayObject {
-  constructor(s, w, h, data = makeArray(w*h, () => 1)) {
+  constructor(s, w, h, data = makeArray(w*h, () => 0)) {
 
     super();
 
@@ -47,81 +111,34 @@ class Grid extends DisplayObject {
     this.data = data;
     this.grid = mapToGrid(this.data, this.width);
     this.map = this.grid.map(([type, x, y]) => `x${x}y${y}`);
+    this.guides = getGuides(w, h);
     this.sweeper = makeSweeper(this.size);
     this.rounder = new Rounder(this.size+1);
+    this.fromSaved = data.filter((a) => a>0).length > 0;
 
-    console.log(this.rounder);
-
-    let x = 0;
-    let y = 0;
     const gap = 1;
     const node = this.node = makeNode('div', 'grid');
     node.style.width = `${w*s+(gap*(w-1))}px`;
     node.style.height = `${h*s+(gap*(h-1))}px`;
     node.style.gap = `${gap}px`;
 
-    const drawPixels = () => {
+    this.guides.forEach(([x, y]) => {
 
-      makeArray(w*h).forEach((index) => {
-        const pixel = makeNode('div', 'grid-pixel');
-        pixel.style.width = pixel.style.height = `${s}px`;
-        pixel.dataset.index = index;
-        pixel.dataset.x = x;
-        pixel.dataset.y = y;
-        pixel.dataset.state === 'empty';
-        pixel.classList.add(this.guides.includes(x) || this.guides.includes(y) ? 'guide' : 'pixel');
-        node.append(pixel);
-        this.pixels.push(pixel);
+      const pixel = makeNode('div', 'grid-pixel');
+      pixel.dataset.x = x;
+      pixel.dataset.y = y;
+      pixel.dataset.state === 'wall';
+      pixel.classList.add('guide');
+      pixel.style.width = pixel.style.height = `${s}px`;
+      pixel.style.position = 'absolute';
+      pixel.style.left = `${x*s+(x+1)}px`;
+      pixel.style.top = `${y*s+(y+1)}px`;
+      node.append(pixel);
+      this.pixels.push(pixel);
 
-        if(x > 0 && x%(w-1)===0) {
-          x = 0;
-          y ++;
-        }
-        else {
-          x ++;
-        };
-
-      });
-
-    };
-
-    const drawGuides = () => {
-
-      const xPixels = (w-1)/3;
-      const yPixels = (h-1)/3;
-      const combined = ((xPixels*yPixels)*4);
-
-      makeArray((w*h) - combined).forEach(() => {
-
-        const pixel = makeNode('div', 'grid-pixel');
-        const isYGuide = this.guides.includes(y);
-        pixel.dataset.x = x;
-        pixel.dataset.y = y;
-        pixel.dataset.state === 'empty';
-        pixel.classList.add('guide');
-        pixel.style.width = pixel.style.height = `${s}px`;
-        pixel.style.position = 'absolute';
-        pixel.style.left = `${x*s+(x+1)}px`;
-        pixel.style.top = `${y*s+(y+1)}px`;
-        node.append(pixel);
-        this.pixels.push(pixel);
-
-        if(x > 0 && x%(w-1)===0) {
-          x = 0;
-          y ++;
-        }
-        else {
-          x += isYGuide ? 1 : 3;
-        };
-
-      });
-
-    };
+    });
 
     node.append(this.sweeper);
-
-    // drawPixels();
-    drawGuides();
 
     this.fill();
 
@@ -130,12 +147,15 @@ class Grid extends DisplayObject {
   };
   fill() {
 
-    this.grid.filter(([type]) => type>0).forEach(([type, x, y]) => {
-      const pixel = this.get(x, y);
-      if(pixel) {
-        pixel.dataset.state = this.stateAttributeMap[type];
-      };
+    this.guides.forEach(([x, y]) => {
+      this.set(x, y, 'wall');
     });
+
+    if(this.fromSaved) {
+      this.grid.forEach(([type, x, y]) => {
+        this.set(x, y, this.stateAttributeMap[type]);
+      });
+    };
 
     return this;
 
@@ -143,8 +163,11 @@ class Grid extends DisplayObject {
   set(x, y, value) {
 
     const dataIndex = this.map.indexOf(`x${x}y${y}`);
+    const pixel = this.get(x, y);
     this.data[dataIndex] = this.stateDataMap[value];
-    this.get(x, y).dataset.state = this.stateAttributeMap[this.data[dataIndex]];
+    if(pixel) {
+      pixel.dataset.state = this.stateAttributeMap[this.data[dataIndex]];
+    };
     return this;
 
   };
@@ -205,7 +228,6 @@ class Grid extends DisplayObject {
     'empty': 0
   };
   stateAttributeMap = ['empty', 'wall', 'door'];
-  guides = makeArray(55).map((value) => value * 3);
   pixels = [];
   x = 1;
   y = 1;
@@ -215,41 +237,6 @@ export class Maker extends DisplayObject {
   constructor() {
 
     super();
-
-    const settings = {
-      'easy': {
-        xPos: 3,
-        yPos: 38,
-        size: 1476,
-        pixelSize: 20,
-        width: 37,
-        height: 49
-      },
-      'medium': {
-        xPos: 3,
-        yPos: 37,
-        size: 1406,
-        pixelSize: 15,
-        width: 46,
-        height: 61
-      },
-      'hard': {
-        xPos: 4,
-        yPos: 36,
-        size: 1370,
-        pixelSize: 12,
-        width: 55,
-        height: 73
-      },
-      'extrahard': {
-        xPos: 4,
-        yPos: 37,
-        size: 1398,
-        pixelSize: 10,
-        width: 67,
-        height: 88
-      },
-    };
 
     const maker = this.node = makeNode('div', 'maker');
     const inputs = makeNode('div', 'inputs');

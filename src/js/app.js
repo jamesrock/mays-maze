@@ -5,7 +5,7 @@ import { Play } from './Play';
 
 setDocumentHeight();
 
-const mode = 'make'; // make, play
+const mode = 'play'; // make, play
 
 const modes = {
   'make': () => {

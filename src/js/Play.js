@@ -11,7 +11,7 @@ const body = document.body;
 export class Play {
 	constructor() {
 
-	  const mode = this.mode = 'hard';
+	  const mode = this.mode = 'extrahard';
     this.maze = new Maze(getLast(mazes[mode]), mode);
 
     this.maze.appendTo(body);

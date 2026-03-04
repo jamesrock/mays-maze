@@ -7,6 +7,7 @@ import {
 	floorTo
 } from '@jamesrock/rockjs';
 import { mapToGrid } from './utils';
+import { settings } from './Maker';
 
 setDocumentHeight();
 
@@ -107,36 +108,13 @@ export class Maze extends GameBase {
 
 		super('maze');
 
-		this.settings = {
-      'easy': {
-        pixelSize: 15,
-        width: 37,
-        height: 49
-      },
-      'medium': {
-        pixelSize: 12,
-        width: 46,
-        height: 61
-      },
-      'hard': {
-        pixelSize: 10,
-        width: 55,
-        height: 73
-      },
-      'extrahard': {
-        pixelSize: 10,
-        width: 55,
-        height: 73
-      },
-    };
-
 		this.mode = mode;
-		this.props = this.settings[this.mode];
+		this.props = settings[this.mode];
 
 		this.width = this.props.width;
 		this.height = this.props.height;
-		this.size = scaler.inflate(40);
-		// this.size = scaler.inflate(10);
+		this.size = scaler.inflate(50);
+		// this.size = scaler.inflate(8);
 		this.data = data;
 		this.grid = mapToGrid(data, this.props.width);
 		this.walls = this.grid.filter(([type]) => type===1).map(([type, x, y]) => new Wall(x, y));
