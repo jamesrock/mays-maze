@@ -9,12 +9,7 @@ export class Make {
 
     this.maker.appendTo(body);
 
-		this.addListeners();
-
 		console.log(this);
-
-	};
-	addListeners() {
 
 	};
 };

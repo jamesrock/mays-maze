@@ -159,6 +159,9 @@ input[type="number"] {
       background-color: red;
     }
   }
+  .grid-sweeper {
+    background-color: green;
+  }
 }
 
 .inputs {

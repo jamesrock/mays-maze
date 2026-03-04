@@ -1,5 +1,7 @@
 import {
   DisplayObject,
+  Rounder,
+	isValidKey,
 	makeArray,
 	makeInput,
 	makeNode,
@@ -20,8 +22,22 @@ const makeOpacitySlider = () => {
   return node;
 };
 
+const makeSweeper = (size) => {
+
+  const pixel = makeNode('div', 'grid-sweeper');
+  pixel.dataset.x = 1;
+  pixel.dataset.y = 1;
+  pixel.classList.add('sweeper');
+  pixel.style.width = pixel.style.height = `${(size*2)+1}px`;
+  pixel.style.position = 'absolute';
+  pixel.style.left = `${1*size+2}px`;
+  pixel.style.top = `${1*size+2}px`;
+  return pixel;
+
+};
+
 class Grid extends DisplayObject {
-  constructor(s, w, h, data = makeArray(w*h, () => 0)) {
+  constructor(s, w, h, data = makeArray(w*h, () => 1)) {
 
     super();
 
@@ -31,6 +47,10 @@ class Grid extends DisplayObject {
     this.data = data;
     this.grid = mapToGrid(this.data, this.width);
     this.map = this.grid.map(([type, x, y]) => `x${x}y${y}`);
+    this.sweeper = makeSweeper(this.size);
+    this.rounder = new Rounder(this.size+1);
+
+    console.log(this.rounder);
 
     let x = 0;
     let y = 0;
@@ -74,12 +94,12 @@ class Grid extends DisplayObject {
       makeArray((w*h) - combined).forEach(() => {
 
         const pixel = makeNode('div', 'grid-pixel');
-        pixel.style.width = pixel.style.height = `${s}px`;
+        const isYGuide = this.guides.includes(y);
         pixel.dataset.x = x;
         pixel.dataset.y = y;
         pixel.dataset.state === 'empty';
-        const isYGuide = this.guides.includes(y);
         pixel.classList.add('guide');
+        pixel.style.width = pixel.style.height = `${s}px`;
         pixel.style.position = 'absolute';
         pixel.style.left = `${x*s+(x+1)}px`;
         pixel.style.top = `${y*s+(y+1)}px`;
@@ -98,6 +118,8 @@ class Grid extends DisplayObject {
 
     };
 
+    node.append(this.sweeper);
+
     // drawPixels();
     drawGuides();
 
@@ -109,7 +131,10 @@ class Grid extends DisplayObject {
   fill() {
 
     this.grid.filter(([type]) => type>0).forEach(([type, x, y]) => {
-      this.get(x, y).dataset.state = this.stateAttributeMap[type];
+      const pixel = this.get(x, y);
+      if(pixel) {
+        pixel.dataset.state = this.stateAttributeMap[type];
+      };
     });
 
     return this;
@@ -128,6 +153,52 @@ class Grid extends DisplayObject {
     return this.node.querySelector([`[data-x="${x}"][data-y="${y}"]`]);
 
   };
+  move(direction, disable) {
+
+    let toErase = [];
+		switch(direction) {
+       case 'up':
+         this.y -= 3;
+         toErase = [
+           [this.x, this.y+2],
+           [this.x+1, this.y+2],
+         ];
+       break;
+       case 'down':
+         this.y += 3;
+         toErase = [
+           [this.x, this.y-1],
+           [this.x+1, this.y-1],
+         ];
+       break;
+       case 'left':
+         this.x -= 3;
+         toErase = [
+           [this.x+2, this.y],
+           [this.x+2, this.y+1],
+         ];
+       break;
+       case 'right':
+         this.x += 3;
+         toErase = [
+           [this.x-1, this.y],
+           [this.x-1, this.y+1],
+         ];
+       break;
+		};
+
+		this.sweeper.style.left = `${(this.x*this.size)+this.x+1}px`;
+    this.sweeper.style.top = `${(this.y*this.size)+this.y+1}px`;
+
+    if(!disable) {
+      toErase.map(([x, y]) => this.get(x, y)).filter((a) => !!a).forEach((pixel) => {
+        pixel.dataset.state = 0;
+      });
+    };
+
+		return this;
+
+	};
   stateDataMap = {
     'wall-yes': 1,
     'wall-no': 0,
@@ -137,6 +208,8 @@ class Grid extends DisplayObject {
   stateAttributeMap = ['empty', 'wall', 'door'];
   guides = makeArray(55).map((value) => value * 3);
   pixels = [];
+  x = 1;
+  y = 1;
 };
 
 export class Maker extends DisplayObject {
@@ -185,7 +258,16 @@ export class Maker extends DisplayObject {
     const inputsBottom = makeNode('div', 'inputs-bottom');
     const target = makeNode('div', 'grid-target');
     const difficulty = makeSelect(Object.keys(settings).map((a) => [a, a]));
-    const mode = makeSelect([['add wall', 'wall-yes'], ['remove wall', 'wall-no'], ['add door', 'door-yes'], ['remove door', 'door-no']]);
+    const mode = makeSelect([
+      ['add wall', 'wall-yes'],
+      ['remove wall', 'wall-no'],
+      ['add door', 'door-yes'],
+      ['remove door', 'door-no'],
+    ]);
+    const tool = makeSelect([
+      ['pen', 'pen'],
+      ['eraser', 'eraser'],
+    ]);
     const constrain = {
       'wall-yes': 'guide',
       'wall-no': 'guide',
@@ -202,7 +284,8 @@ export class Maker extends DisplayObject {
     const width = makeInput(props.width);
     const height = makeInput(props.height);
     const opacity = makeOpacitySlider();
-    let grid = null;
+
+    this.grid = null;
 
     size.step = 2;
 
@@ -210,11 +293,11 @@ export class Maker extends DisplayObject {
       body.style.backgroundImage = `url(/mazes/maze-${Number(set.value) + 1}-${difficulty.value}.png)`;
       body.style.backgroundSize = `${size.value}px`;
       body.style.backgroundPosition = `calc(50% - ${xPos.value}px) calc(50% - ${yPos.value}px)`;
-      if(grid) {
-        grid.destroy();
+      if(this.grid) {
+        this.grid.destroy();
       };
-      grid = new Grid(Number(pixelSize.value), Number(width.value), Number(height.value), mazes[difficulty.value][set.value]);
-      grid.appendTo(target);
+      this.grid = new Grid(Number(pixelSize.value), Number(width.value), Number(height.value), mazes[difficulty.value][set.value]);
+      this.grid.appendTo(target);
     };
 
     difficulty.addEventListener('input', () => {
@@ -234,7 +317,7 @@ export class Maker extends DisplayObject {
       target.style.opacity = opacity.value;
     });
 
-    [set, difficulty, mode, copyButton, opacity].forEach((input) => {
+    [set, difficulty, mode, tool, copyButton, opacity].forEach((input) => {
       inputsTop.append(input);
     });
 
@@ -251,29 +334,126 @@ export class Maker extends DisplayObject {
 
     changeHandler();
 
-    let knobs = null;
-
-    target.addEventListener('touchstart', (e) => {
-      knobs = [];
-    });
-
-    target.addEventListener('touchmove', (e) => {
-     	const knob = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-     	if(knob?.classList.contains(constrain[mode.value])) {
-    		if(knobs.indexOf(knob)===-1) {
-     			knobs.push(knob);
-          grid.set(knob.dataset.x, knob.dataset.y, mode.value);
-    		};
-     	};
-     	e.preventDefault();
-    });
-
     copyButton.addEventListener('click', () => {
-      navigator.clipboard.writeText(JSON.stringify(grid.data));
+      navigator.clipboard.writeText(JSON.stringify(this.grid.data));
       copyButton.innerText = 'copied!';
       setTimeout(() => {
         copyButton.innerText = 'copy';
       }, 2000);
+    });
+
+    // additional listeners
+
+    const
+    directionsKeyMap = {
+      ArrowLeft: 'left',
+      ArrowUp: 'up',
+      ArrowRight: 'right',
+      ArrowDown: 'down'
+    },
+    directionsArray = Object.keys(directionsKeyMap);
+
+    let knobs = null;
+    let touch = null;
+    let xMovement = 0;
+    let yMovement = 0;
+    let disable = false;
+
+    document.addEventListener('keydown', (e) => {
+
+      if(isValidKey(e.code, ['Space'])) {
+        disable = true;
+      };
+
+      if(isValidKey(e.code, directionsArray)) {
+        this.grid.move(directionsKeyMap[e.key], disable);
+      };
+
+    });
+
+    document.addEventListener('keyup', (e) => {
+
+      if(isValidKey(e.code, ['Space'])) {
+        disable = false;
+      };
+
+    });
+
+    target.addEventListener('touchstart', (e) => {
+
+      knobs = [];
+      touch = e.touches[0];
+      xMovement = 0;
+      yMovement = 0;
+
+      if(['pen'].includes(tool.value)) {
+        //
+      };
+
+      e.preventDefault();
+
+    });
+
+    target.addEventListener('touchmove', (e) => {
+
+      if(['pen'].includes(tool.value)) {
+
+        const knob = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+       	if(knob?.classList.contains(constrain[mode.value])) {
+      		if(knobs.indexOf(knob)===-1) {
+       			knobs.push(knob);
+            this.grid.set(knob.dataset.x, knob.dataset.y, mode.value);
+      		};
+       	};
+       	e.preventDefault();
+
+      }
+      else if(['eraser'].includes(tool.value)) {
+
+        const {clientX: originalClientX, clientY: originalClientY} = touch;
+        const {clientX, clientY} = e.touches[0];
+        const x = this.grid.rounder.round(clientX - originalClientX);
+        const y = this.grid.rounder.round(clientY - originalClientY);
+
+        // if(!yMovement && x !== xMovement) {
+        if(x !== xMovement) {
+          document.dispatchEvent(new Event(x > xMovement ? 'drag-right' : 'drag-left'));
+        };
+
+        // if(!xMovement && y !== yMovement) {
+        if(y !== yMovement) {
+          document.dispatchEvent(new Event(y > yMovement ? 'drag-down' : 'drag-up'));
+        };
+
+        xMovement = x;
+        yMovement = y;
+
+      };
+
+    });
+
+    document.addEventListener('drag-up', () => {
+
+      this.grid.move('up');
+
+    });
+
+    document.addEventListener('drag-down', () => {
+
+      this.grid.move('down');
+
+    });
+
+    document.addEventListener('drag-right', () => {
+
+      this.grid.move('right');
+
+    });
+
+    document.addEventListener('drag-left', () => {
+
+      this.grid.move('left');
+
     });
 
   };
