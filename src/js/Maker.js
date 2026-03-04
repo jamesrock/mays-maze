@@ -145,7 +145,7 @@ export class Maker extends DisplayObject {
     super();
 
     const settings = {
-      '100': {
+      'easy': {
         xPos: 3,
         yPos: 38,
         size: 1476,
@@ -153,7 +153,7 @@ export class Maker extends DisplayObject {
         width: 37,
         height: 49
       },
-      '200': {
+      'medium': {
         xPos: 3,
         yPos: 37,
         size: 1406,
@@ -161,7 +161,7 @@ export class Maker extends DisplayObject {
         width: 46,
         height: 61
       },
-      '300': {
+      'hard': {
         xPos: 4,
         yPos: 36,
         size: 1370,
@@ -169,29 +169,13 @@ export class Maker extends DisplayObject {
         width: 55,
         height: 73
       },
-      '400': {
+      'extrahard': {
         xPos: 4,
         yPos: 37,
         size: 1398,
         pixelSize: 10,
         width: 67,
         height: 88
-      },
-      '500': {
-        xPos: 4,
-        yPos: 34,
-        size: 1306,
-        pixelSize: 8,
-        width: 76,
-        height: 100
-      },
-      '600': {
-        xPos: 4,
-        yPos: 34,
-        size: 1300,
-        pixelSize: 7,
-        width: 85,
-        height: 112
       },
     };
 
@@ -229,7 +213,7 @@ export class Maker extends DisplayObject {
       if(grid) {
         grid.destroy();
       };
-      grid = new Grid(Number(pixelSize.value), Number(width.value), Number(height.value), mazes[`d${difficulty.value}`][set.value]);
+      grid = new Grid(Number(pixelSize.value), Number(width.value), Number(height.value), mazes[difficulty.value][set.value]);
       grid.appendTo(target);
     };
 

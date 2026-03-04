@@ -111,40 +111,30 @@ class Door {
 };
 
 class Maze extends GameBase {
-	constructor(data, mode = '100') {
+	constructor(data, mode = 'easy') {
 
 		super('maze');
 
 		this.settings = {
-      '100': {
+      'easy': {
         pixelSize: 15,
         width: 37,
         height: 49
       },
-      '200': {
+      'medium': {
         pixelSize: 12,
         width: 46,
         height: 61
       },
-      '300': {
+      'hard': {
         pixelSize: 10,
         width: 55,
         height: 73
       },
-      '400': {
+      'extrahard': {
         pixelSize: 10,
         width: 55,
         height: 73
-      },
-      '500': {
-        pixelSize: 15,
-        width: 37,
-        height: 49
-      },
-      '600': {
-        pixelSize: 12,
-        width: 46,
-        height: 61
       },
     };
 
@@ -359,9 +349,9 @@ directionsKeyMap = {
 },
 directionsArray = Object.keys(directionsKeyMap),
 rounder = new Rounder(30),
-mode = '300',
+mode = 'hard',
 maker = window.maker = new Maker(),
-snake = window.snake = new Maze(getLast(mazes[`d${mode}`]), mode);
+snake = window.snake = new Maze(getLast(mazes[mode]), mode);
 
 let touch = null;
 let xMovement = 0;
