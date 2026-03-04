@@ -139,8 +139,10 @@ class Grid extends DisplayObject {
   pixels = [];
 };
 
-export class Maker {
+export class Maker extends DisplayObject {
   constructor() {
+
+    super();
 
     const settings = {
       '100': {
@@ -193,7 +195,7 @@ export class Maker {
       },
     };
 
-    const maker = makeNode('div', 'maker');
+    const maker = this.node = makeNode('div', 'maker');
     const inputs = makeNode('div', 'inputs');
     const inputsTop = makeNode('div', 'inputs-top');
     const inputsBottom = makeNode('div', 'inputs-bottom');
@@ -262,7 +264,6 @@ export class Maker {
 
     maker.append(target);
     maker.append(inputs);
-    body.append(maker);
 
     changeHandler();
 

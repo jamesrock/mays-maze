@@ -322,12 +322,6 @@ class Maze extends GameBase {
     return !queries.map((q) => this.checkForWall(q)).includes(true) && !queries.map((q) => this.checkForDoor(q)).includes(true);
 
 	};
-	renderTo(to) {
-
-		to.appendChild(this.node);
-		return this;
-
-	};
 	inflate(a) {
 
 		return (a * this.size);
@@ -368,6 +362,7 @@ directionsKeyMap = {
 directionsArray = Object.keys(directionsKeyMap),
 rounder = new Rounder(30),
 mode = '300',
+// maker = window.maker = new Maker(),
 snake = window.snake = new Maze(getLast(mazes[`d${mode}`]), mode);
 
 let touch = null;
@@ -448,5 +443,5 @@ document.addEventListener('drag-left', () => {
 
 });
 
-snake.renderTo(body);
-// window.maker = new Maker();
+snake.appendTo(body);
+// maker.appendTo(body);
