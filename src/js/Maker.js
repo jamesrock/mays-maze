@@ -191,8 +191,8 @@ class Grid extends DisplayObject {
     this.sweeper.style.top = `${(this.y*this.size)+this.y+1}px`;
 
     if(!disable) {
-      toErase.map(([x, y]) => this.get(x, y)).filter((a) => !!a).forEach((pixel) => {
-        pixel.dataset.state = 0;
+      toErase.forEach(([x, y]) => {
+        this.set(x, y, 'empty');
       });
     };
 
@@ -200,10 +200,9 @@ class Grid extends DisplayObject {
 
 	};
   stateDataMap = {
-    'wall-yes': 1,
-    'wall-no': 0,
-    'door-yes': 2,
-    'door-no': 0
+    'wall': 1,
+    'door': 2,
+    'empty': 0
   };
   stateAttributeMap = ['empty', 'wall', 'door'];
   guides = makeArray(55).map((value) => value * 3);
@@ -259,20 +258,18 @@ export class Maker extends DisplayObject {
     const target = makeNode('div', 'grid-target');
     const difficulty = makeSelect(Object.keys(settings).map((a) => [a, a]));
     const mode = makeSelect([
-      ['add wall', 'wall-yes'],
-      ['remove wall', 'wall-no'],
-      ['add door', 'door-yes'],
-      ['remove door', 'door-no'],
+      ['wall', 'wall'],
+      ['door', 'door'],
+      ['eraser', 'empty']
     ]);
     const tool = makeSelect([
       ['pen', 'pen'],
       ['eraser', 'eraser'],
     ]);
     const constrain = {
-      'wall-yes': 'guide',
-      'wall-no': 'guide',
-      'door-yes': 'guide',
-      'door-no': 'guide'
+      'wall': 'guide',
+      'door': 'guide',
+      'empty': 'guide'
     };
     const set = makeSelect(makeArray(10).map((a) => [`#${a + 1}`, a]));
     const copyButton = makeButton('copy', 'copy');
