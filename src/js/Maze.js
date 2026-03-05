@@ -206,16 +206,16 @@ export class Maze extends GameBase {
 
 		switch(direction) {
       case 'up':
-        this.y += this.movement;
+        this.y ++;
       break;
       case 'down':
-        this.y -= this.movement;
+        this.y --;
       break;
       case 'left':
-        this.x += this.movement;
+        this.x ++;
       break;
       case 'right':
-        this.x -= this.movement;
+        this.x --;
       break;
 		};
 
@@ -244,14 +244,17 @@ export class Maze extends GameBase {
       break;
 		};
 
-		const queries = [
+		const
+		queries = [
      	`x${x}y${y}`, // top left
      	`x${x+1}y${y}`, // top right
      	`x${x}y${y+1}`, // bottom right
      	`x${x+1}y${y+1}`, // bottom left
-    ];
+    ],
+    walls = this.getWalls(),
+    doors = this.getDoors();
 
-    return !queries.map((q) => this.checkForWall(q)).includes(true) && !queries.map((q) => this.checkForDoor(q)).includes(true);
+    return !queries.map((q) => walls.includes(q)).includes(true) && !queries.map((q) => doors.includes(q)).includes(true);
 
 	};
 	inflate(a) {
@@ -259,14 +262,19 @@ export class Maze extends GameBase {
 		return (a * this.size);
 
 	};
-	checkForWall(q) {
+	getWalls() {
 
-		return this.walls.map((wall) => (`x${wall.x+this.x}y${wall.y+this.y}`)).includes(q);
+	  return this.toQueryArray(this.walls);
 
 	};
-	checkForDoor(q) {
+	getDoors() {
 
-		return this.doors.filter((door) => !door.open).map((door) => (`x${door.x+this.x}y${door.y+this.y}`)).includes(q);
+		return this.toQueryArray(this.doors.filter((door) => !door.open));
+
+	};
+	toQueryArray(items) {
+
+	  return items.map((obj) => `x${obj.x+this.x}y${obj.y+this.y}`);
 
 	};
 	stop() {
@@ -275,5 +283,4 @@ export class Maze extends GameBase {
 		return this;
 
 	};
-	movement = 1;
 };
