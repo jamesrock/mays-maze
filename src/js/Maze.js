@@ -1,13 +1,13 @@
 import {
 	Scaler,
 	GameBase,
+	SoundManager,
 	setDocumentHeight,
 	makeArray,
 	minWidth,
 	makeNode,
 	floorTo
 } from '@jamesrock/rockjs';
-import { SoundManager } from './SoundManager';
 import { mapToGrid } from './utils';
 import { settings } from './Maker';
 
@@ -109,6 +109,10 @@ export class Maze extends GameBase {
 
 		this.node.appendChild(this.canvas);
 		this.node.appendChild(this.gameOverNode);
+
+		this.sounds.load().then(() => {
+		  console.log('SoundManager loaded!');
+		});
 
 		this.showGameOverScreen();
 		this.reset();
