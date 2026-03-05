@@ -197,16 +197,16 @@ export class Maze extends GameBase {
 
 		switch(direction) {
       case 'up':
-        this.y ++;
+        this.y += 3;
       break;
       case 'down':
-        this.y --;
+        this.y -= 3;
       break;
       case 'left':
-        this.x ++;
+        this.x += 3;
       break;
       case 'right':
-        this.x --;
+        this.x -= 3;
       break;
 		};
 
