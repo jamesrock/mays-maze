@@ -7,8 +7,6 @@ export class SoundManager {
 
     this.loadSounds();
 
-    console.log(this);
-
   };
   loadSounds() {
 
