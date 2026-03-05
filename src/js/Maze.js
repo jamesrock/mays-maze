@@ -98,7 +98,9 @@ export class Maze extends GameBase {
 		this.walls = this.grid.filter(([type]) => type===1).map(([type, x, y]) => new Wall(x, y));
 		this.doors = this.grid.filter(([type]) => type===2).map(([type, x, y]) => new Door(x, y));
 		this.coins = makeCoins(this.width, this.height);
-		this.sounds = new SoundManager('/audio/point.mp3');
+		this.sounds = new SoundManager({
+		  'point': '/audio/point.mp3'
+		});
 		this.countCount = this.coins.length;
 
 		this.canvas.width = scaler.inflate(window.innerWidth);

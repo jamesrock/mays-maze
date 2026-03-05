@@ -1,28 +1,56 @@
-import { makeArray } from '@jamesrock/rockjs';
+class BufferLoader {
+  constructor(context, sounds, callback) {
 
-export class SoundManager {
-  constructor(url) {
+    const buffers = {};
+    const keys = Object.keys(sounds);
+    let loaded = 0;
 
-    this.sounds = makeArray(10, () => makeAudio(url));
+    const loadSound = (name, path) => {
 
-  };
-  play() {
+      var request = new XMLHttpRequest();
+      request.open('GET', path, true);
+      request.responseType = 'arraybuffer';
 
-    this.sounds[this.index].play();
+      request.onload = () => {
+        context.decodeAudioData(request.response, (buffer) => {
+          buffers[name] = buffer;
+          loaded ++;
+          if(loaded===keys.length) {
+            callback(buffers);
+          };
+        }, () => {
+          console.log('error!');
+        });
+      };
 
-    if(this.index<this.sounds.length-1) {
-      this.index ++;
-    }
-    else {
-      this.index = 0;
+      request.send();
+
     };
 
+    keys.forEach((key) => {
+      loadSound(key, sounds[key]);
+    });
+
   };
-  index = 0;
 };
 
-const makeAudio = (url) => {
-  const audio = new Audio(url);
-  audio.preload = true;
-  return audio;
+export class SoundManager {
+  constructor(sounds) {
+
+    this.context = new AudioContext();
+    this.buffers = {};
+
+    new BufferLoader(this.context, sounds, (items) => {
+      this.buffers = items;
+    });
+
+  };
+  play(sound = 'point') {
+
+    const source = this.context.createBufferSource();
+    source.buffer = this.buffers[sound];
+    source.connect(this.context.destination);
+    source.start();
+
+  };
 };
