@@ -2,4 +2,3 @@
 node_modules
 dist
 src/public/mazes
-src/public/audio
