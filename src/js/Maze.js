@@ -3,6 +3,7 @@ import {
 	GameBase,
 	setDocumentHeight,
 	makeArray,
+	minWidth,
 	makeNode,
 	floorTo
 } from '@jamesrock/rockjs';
@@ -34,6 +35,10 @@ const makeCoins = (w, h) => {
     return coin;
 
   });
+};
+
+const getPixelSize = () => {
+  return minWidth(50*10) ? 50 : 30;
 };
 
 class Wall {
@@ -87,13 +92,12 @@ export class Maze extends GameBase {
 
 		this.width = this.props.width;
 		this.height = this.props.height;
-		this.size = scaler.inflate(50);
-		// this.size = scaler.inflate(8);
+		this.size = scaler.inflate(getPixelSize());
 		this.data = data;
-		this.grid = mapToGrid(data, this.props.width);
+		this.grid = mapToGrid(data, this.width);
 		this.walls = this.grid.filter(([type]) => type===1).map(([type, x, y]) => new Wall(x, y));
 		this.doors = this.grid.filter(([type]) => type===2).map(([type, x, y]) => new Door(x, y));
-		this.coins = makeCoins(this.props.width, this.props.height);
+		this.coins = makeCoins(this.width, this.height);
 		this.sounds = new SoundManager('/audio/point.mp3');
 		this.countCount = this.coins.length;
 
@@ -173,7 +177,6 @@ export class Maze extends GameBase {
 		if(coin) {
 
 			this.coins.splice(this.coins.indexOf(coin), 1);
-			// coin.color = 'magenta';
 			this.score ++;
 
 			this.sounds.play();

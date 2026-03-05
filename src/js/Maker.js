@@ -1,6 +1,6 @@
 import {
   DisplayObject,
-  Rounder,
+  addDragListeners,
 	isValidKey,
 	makeArray,
 	makeInput,
@@ -113,7 +113,6 @@ class Grid extends DisplayObject {
     this.map = this.grid.map(([type, x, y]) => `x${x}y${y}`);
     this.guides = getGuides(w, h);
     this.sweeper = makeSweeper(this.size);
-    this.rounder = new Rounder(this.size+1);
     this.fromSaved = data.filter((a) => a>0).length > 0;
 
     const gap = 1;
@@ -338,10 +337,9 @@ export class Maker extends DisplayObject {
     directionsArray = Object.keys(directionsKeyMap);
 
     let knobs = null;
-    let touch = null;
-    let xMovement = 0;
-    let yMovement = 0;
     let disable = false;
+
+    addDragListeners(target, this.grid.size + 1);
 
     document.addEventListener('keydown', (e) => {
 
@@ -366,14 +364,6 @@ export class Maker extends DisplayObject {
     target.addEventListener('touchstart', (e) => {
 
       knobs = [];
-      touch = e.touches[0];
-      xMovement = 0;
-      yMovement = 0;
-
-      if(['pen'].includes(tool.value)) {
-        //
-      };
-
       e.preventDefault();
 
     });
@@ -391,52 +381,33 @@ export class Maker extends DisplayObject {
        	};
        	e.preventDefault();
 
-      }
-      else if(['eraser'].includes(tool.value)) {
-
-        const {clientX: originalClientX, clientY: originalClientY} = touch;
-        const {clientX, clientY} = e.touches[0];
-        const x = this.grid.rounder.round(clientX - originalClientX);
-        const y = this.grid.rounder.round(clientY - originalClientY);
-
-        // if(!yMovement && x !== xMovement) {
-        if(x !== xMovement) {
-          document.dispatchEvent(new Event(x > xMovement ? 'drag-right' : 'drag-left'));
-        };
-
-        // if(!xMovement && y !== yMovement) {
-        if(y !== yMovement) {
-          document.dispatchEvent(new Event(y > yMovement ? 'drag-down' : 'drag-up'));
-        };
-
-        xMovement = x;
-        yMovement = y;
-
       };
 
     });
 
-    document.addEventListener('drag-up', () => {
+    const isEraser = () => ['eraser'].includes(tool.value);
 
-      this.grid.move('up');
+    target.addEventListener('drag-up', () => {
 
-    });
-
-    document.addEventListener('drag-down', () => {
-
-      this.grid.move('down');
+      isEraser() && this.grid.move('up');
 
     });
 
-    document.addEventListener('drag-right', () => {
+    target.addEventListener('drag-down', () => {
 
-      this.grid.move('right');
+      isEraser() && this.grid.move('down');
 
     });
 
-    document.addEventListener('drag-left', () => {
+    target.addEventListener('drag-right', () => {
 
-      this.grid.move('left');
+      isEraser() && this.grid.move('right');
+
+    });
+
+    target.addEventListener('drag-left', () => {
+
+      isEraser() && this.grid.move('left');
 
     });
 

@@ -1,5 +1,5 @@
 import {
-	Rounder,
+	addDragListeners,
 	isValidKey,
 	getLast
 } from '@jamesrock/rockjs';
@@ -30,12 +30,7 @@ export class Play {
   		ArrowRight: 'right',
   		ArrowDown: 'down'
     },
-    directionsArray = Object.keys(directionsKeyMap),
-    rounder = new Rounder(30);
-
-    let touch = null;
-    let xMovement = 0;
-    let yMovement = 0;
+    directionsArray = Object.keys(directionsKeyMap);
 
     document.addEventListener('keydown', (e) => {
 
@@ -57,35 +52,7 @@ export class Play {
 
     });
 
-    document.addEventListener('touchstart', (e) => {
-
-      touch = e.touches[0];
-      xMovement = 0;
-  		yMovement = 0;
-
-  		e.preventDefault();
-
-    });
-
-    document.addEventListener('touchmove', (e) => {
-
-  		const {clientX: originalClientX, clientY: originalClientY} = touch;
-  		const {clientX, clientY} = e.touches[0];
-  		const x = rounder.round(clientX - originalClientX);
-  		const y = rounder.round(clientY - originalClientY);
-
-  		if(x !== xMovement) {
-   			document.dispatchEvent(new Event(x > xMovement ? 'drag-right' : 'drag-left'));
-  		};
-
-  		if(y !== yMovement) {
-   			document.dispatchEvent(new Event(y > yMovement ? 'drag-down' : 'drag-up'));
-  		};
-
-  		xMovement = x;
-  		yMovement = y;
-
-    });
+    addDragListeners(document, this.maze.size);
 
     document.addEventListener('drag-up', () => {
 
@@ -110,5 +77,6 @@ export class Play {
   		this.maze.move('left');
 
     });
+
 	};
 };
