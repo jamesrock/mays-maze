@@ -6,39 +6,13 @@ import {
 	makeNode,
 	floorTo
 } from '@jamesrock/rockjs';
+import { SoundManager } from './SoundManager';
 import { mapToGrid } from './utils';
 import { settings } from './Maker';
 
 setDocumentHeight();
 
 const scaler = new Scaler(2);
-
-class SoundManager {
-  constructor(url) {
-
-    this.sounds = makeArray(10, () => makeAudio(url));
-
-  };
-  play() {
-
-    this.sounds[this.index].play();
-
-    if(this.index<this.sounds.length-1) {
-      this.index ++;
-    }
-    else {
-      this.index = 0;
-    };
-
-  };
-  index = 0;
-};
-
-const makeAudio = (url) => {
-  const audio = new Audio(url);
-  audio.preload = true;
-  return audio;
-};
 
 const makeCoins = (w, h) => {
   let x = 4;
@@ -127,16 +101,12 @@ export class Maze extends GameBase {
 		this.canvas.height = scaler.inflate(window.innerHeight);
 		this.canvas.style.width = `${scaler.deflate(this.canvas.width)}px`;
 
-		this.scoreNode = makeNode('div', 'stats');
-
 		this.node.appendChild(this.canvas);
-		this.node.appendChild(this.scoreNode);
 		this.node.appendChild(this.gameOverNode);
 
 		this.showGameOverScreen();
 		this.reset();
 		this.render();
-		this.updateScore();
 
 		console.log(this);
 
@@ -187,9 +157,6 @@ export class Maze extends GameBase {
 		this.x = floorTo((numberOfXPixels / 2) - 2);
 		this.y = floorTo((numberOfYPixels / 2) - 4);
 
-		// this.x = 20;
-		// this.y = 20;
-
 		this.men = [new Man(this.x + 1, this.y + 1)];
 		this.score = 0;
 		this.gameOver = false;
@@ -201,7 +168,7 @@ export class Maze extends GameBase {
 	};
 	checkCoins() {
 
-		const coin = this.coins.find((c) => (c.x + this.x) === (this.men[0].x) && (c.y + this.y) === (this.men[0].y));
+		const coin = this.coins.find(({x, y}) => (x + this.x) === (this.men[0].x) && (y + this.y) === (this.men[0].y));
 
 		if(coin) {
 
@@ -216,8 +183,6 @@ export class Maze extends GameBase {
 					door.open = true;
 				});
 			};
-
-			this.updateScore();
 
 		};
 
@@ -298,12 +263,6 @@ export class Maze extends GameBase {
 	stop() {
 
 		cancelAnimationFrame(this.animationFrame);
-		return this;
-
-	};
-	updateScore() {
-
-	  // this.scoreNode.innerHTML = `${this.score}/${this.countCount}`;
 		return this;
 
 	};
