@@ -181,7 +181,7 @@ export class Maze extends GameBase {
 			this.coins.splice(this.coins.indexOf(coin), 1);
 			this.score ++;
 
-			this.sounds.play();
+			this.sounds.play('point');
 
 			if(this.coins.length === 0) {
 			  this.doors.forEach((door) => {

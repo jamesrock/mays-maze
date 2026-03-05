@@ -1,51 +1,41 @@
-class BufferLoader {
-  constructor(context, sounds, callback) {
-
-    const buffers = {};
-    const keys = Object.keys(sounds);
-    let loaded = 0;
-
-    const loadSound = (name, path) => {
-
-      var request = new XMLHttpRequest();
-      request.open('GET', path, true);
-      request.responseType = 'arraybuffer';
-
-      request.onload = () => {
-        context.decodeAudioData(request.response, (buffer) => {
-          buffers[name] = buffer;
-          loaded ++;
-          if(loaded===keys.length) {
-            callback(buffers);
-          };
-        }, () => {
-          console.log('error!');
-        });
-      };
-
-      request.send();
-
-    };
-
-    keys.forEach((key) => {
-      loadSound(key, sounds[key]);
-    });
-
-  };
-};
-
 export class SoundManager {
   constructor(sounds) {
 
     this.context = new AudioContext();
+    this.sounds = sounds;
     this.buffers = {};
 
-    new BufferLoader(this.context, sounds, (items) => {
-      this.buffers = items;
+    this.loadSounds();
+
+    console.log(this);
+
+  };
+  loadSounds() {
+
+    Object.keys(this.sounds).forEach((key) => {
+      this.loadSound(key, this.sounds[key]);
+    });
+
+  };
+  loadSound(name, path) {
+
+    fetch(path).then((r) => r.arrayBuffer()).then((response) => {
+
+      this.context.decodeAudioData(response, (buffer) => {
+        this.buffers[name] = buffer;
+      }, () => {
+        console.log('error!');
+      });
+
     });
 
   };
   play(sound = 'point') {
+
+    if(!this.buffers[sound]) {
+      console.log(`${sound} not loaded!`);
+      return;
+    };
 
     const source = this.context.createBufferSource();
     source.buffer = this.buffers[sound];
