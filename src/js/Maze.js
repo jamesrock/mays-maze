@@ -2,16 +2,12 @@ import {
 	Scaler,
 	GameBase,
 	SoundManager,
-	setDocumentHeight,
 	makeArray,
 	minWidth,
-	makeNode,
 	floorTo
 } from '@jamesrock/rockjs';
 import { mapToGrid } from './utils';
 import { settings } from './Maker';
-
-setDocumentHeight();
 
 const scaler = new Scaler(2);
 
